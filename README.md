@@ -4,7 +4,6 @@
 
 [![npm version](https://badge.fury.io/js/enum-next.svg)](https://badge.fury.io/js/enum-next)
 [![Travis Build Status](https://travis-ci.org/we-human-space/node-enum-next.svg?branch=master)](https://travis-ci.org/we-human-space/misstep)
-[![Windows Build Status](https://img.shields.io/appveyor/ci/philippefutureboy/node-enum-next/master.svg?label=windows%20build)](https://ci.appveyor.com/project/philippefutureboy/node-enum-next/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/we-human-space/node-enum-next/badge.svg?branch=master)](https://coveralls.io/github/we-human-space/node-enum-next?branch=master)
 [![Dependencies Status](https://david-dm.org/we-human-space/node-enum-next.svg)](https://david-dm.org/)
 
