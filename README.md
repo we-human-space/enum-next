@@ -11,7 +11,7 @@
 
 * [What is an Enumerated Type (Enum)?](#what-is)
 * [Why should I use Enums?](#why)
-* [How to import](#import)
+* [Installation](#installation)
 * [API](#api)
 
 ### <a name="what-is"></a>What is an Enumerated Type (Enum)?
@@ -127,13 +127,28 @@ PLANETS.VENUS // Symbol(VENUS)
 PLANETS.NEPTUNE // Symbol(NEPTUNE)
 ```
 
-### <a name="import"></a>How to Import
+### <a name="installation"></a>Installation
+
+`
+yarn add enum-next
+`
+
+**ESM:**
 
 ```js
-import { Enum } from 'JS-ADT';
+import Enum from 'enum-next';
 
 const ENUM = new Enum([...],{...});
 ```
+
+**ES5:**
+
+```js
+const Enum = require('enum-next');
+
+const ENUM = new Enum([...],{...});
+```
+
 
 ### <a name="api"></a>API
 
