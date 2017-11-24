@@ -3,9 +3,9 @@
 > JS Implementation of the Java Enumerable type
 
 [![npm version](https://badge.fury.io/js/enum-next.svg)](https://badge.fury.io/js/enum-next)
-[![Travis Build Status](https://travis-ci.org/we-human-space/node-enum-next.svg?branch=master)](https://travis-ci.org/we-human-space/misstep)
-[![Coverage Status](https://coveralls.io/repos/github/we-human-space/node-enum-next/badge.svg?branch=master)](https://coveralls.io/github/we-human-space/node-enum-next?branch=master)
-[![Dependencies Status](https://david-dm.org/we-human-space/node-enum-next.svg)](https://david-dm.org/)
+[![Travis Build Status](https://travis-ci.org/we-human-space/enum-next.svg?branch=master)](https://travis-ci.org/we-human-space/misstep)
+[![Coverage Status](https://coveralls.io/repos/github/we-human-space/enum-next/badge.svg?branch=master)](https://coveralls.io/github/we-human-space/enum-next?branch=master)
+[![Dependencies Status](https://david-dm.org/we-human-space/enum-next.svg)](https://david-dm.org/)
 
 ### Table of Contents
 
