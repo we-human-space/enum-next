@@ -204,3 +204,11 @@ Returns an array of all the constant keys provided to the constructor.
 
 Returns an array of all the Symbol values. If symbolOnly is specified, primitive
 Symbols will be returned; Object(Symbol) otherwise.
+
+#### Enum#entries()
+
+`// Enum.values :: * -> [[string, Symbol]]`
+
+Returns an returns an array of a given Enum's [key, value] pairs, in the same
+order as that provided by a `for...of` loop. If symbolOnly is specified, primitive
+Symbols will be returned; Object(Symbol) otherwise.

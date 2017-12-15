@@ -12,7 +12,7 @@ const ERRORS = {
     TYPEOF: (type, val, i) => `Enum expected constant key '${typeof val === 'symbol' ? val.toString() : val}' at index ${i} to be of type ${type}. Found ${typeof val} instead`
   },
   BEHAVIOUR: {
-    TYPEOF: (be) => `Enum expected argument 'behaviour' to be an object. Found ${typeof be} instead`,
+    TYPEOF: (be) => `Enum expected argument 'behaviour' to be an object. Found ${typeof be === 'symbol' ? be.toString() : typeof be} instead`,
     KEY_AND_ID: `Enum constants' behaviour properties cannot be named '$key' or '$id' as it would override default behaviour`
   }
 };
@@ -50,6 +50,10 @@ class Enum {
 
   values(){
     return this.$keys.map((k) => this[k]);
+  }
+
+  entries(){
+    return this.$keys.map((k) => [k, this[k]]);
   }
 }
 
@@ -91,11 +95,12 @@ function Enumerable(constants, behaviour, symbolOnly){
       }
     }
 
+    this.behaviour = behaviour;
     for(let key in behaviour){
       if(key === '$key' || key === '$id'){
         throw new Error(ERRORS.BEHAVIOUR.KEY_AND_ID);
       }
-      enumerable[key] = behaviour[key];
+      enumerable.__defineGetter__(key, () => this.behaviour[key]);
     }
 
     this.__defineGetter__(enumerable.$key, () => enumerable);

@@ -2,6 +2,7 @@ import 'babel-polyfill';
 import { expect } from 'chai';
 import enumerable from '../../../src';
 
+/* eslint-disable no-unused-expressions */
 describe('Enum', function(){
   let EnumClass;
   let Enum;
@@ -414,4 +415,42 @@ describe('Enum', function(){
       done();
     });
   });
+
+  describe('entries', function(){
+    it('[symbolOnly=false] should return a list of the entries provided to the constructor respecting the order in which they were provided', function(done){
+      const e = Enum([
+        'C', {a: 'Ca', b: 'Cb'},
+        'A', {a: 'Aa', b: 'Ab'},
+        'B', {a: 'Ba', b: 'Bb'}
+      ]);
+
+      const entries = e.entries();
+      expect(entries[0][0]).to.equal('C');
+      expect(entries[0][1].a).to.equal('Ca');
+      expect(entries[0][1].b).to.equal('Cb');
+      expect(entries[1][0]).to.equal('A');
+      expect(entries[1][1].a).to.equal('Aa');
+      expect(entries[1][1].b).to.equal('Ab');
+      expect(entries[2][0]).to.equal('B');
+      expect(entries[2][1].a).to.equal('Ba');
+      expect(entries[2][1].b).to.equal('Bb');
+
+      done();
+    });
+
+    it('[symbolOnly=true] should return a list of the entries provided to the constructor respecting the order in which they were provided', function(done){
+      const e = Enum(['C', 'A', 'B'], true);
+
+      const values = e.entries();
+      expect(values[0][0]).to.equal('C');
+      expect(values[0][1].toString()).to.equal('Symbol(C)');
+      expect(values[1][0]).to.equal('A');
+      expect(values[1][1].toString()).to.equal('Symbol(A)');
+      expect(values[2][0]).to.equal('B');
+      expect(values[2][1].toString()).to.equal('Symbol(B)');
+      done();
+    });
+  });
 });
+
+/* eslint-enable no-unused-expressions */
