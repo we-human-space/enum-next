@@ -152,6 +152,8 @@ const ENUM = new Enum([...],{...});
 
 ### <a name="api"></a>API
 
+### Static Methods
+
 #### new Enum(constants [, behaviour])
 
 `// Enum :: [string, \*, ..., string, \*], Object -> Enum`
@@ -182,6 +184,44 @@ Constructor for the Enum type.
   Defaults to false.
 
 Constructor for the Enum type. Returns an enum that is only comprised of Symbols.
+
+#### Enum::concat(enums[, options])
+
+`// Enum.concat :: [Enum], Object -> Enum`
+
+* `enums` {Array<Enum>}: Array of the Enums to concatenate together.
+* `options` {Object}: Concatenation options
+  * `clean` {Boolean}: Whether to do a clean concat or not. Clean concats allow you
+    to standardize behaviours via the `behaviour` option property and have new
+    $id properties assigned, but the new Enum constants will not be equal to the
+    constants from the constituent (passed) enums
+  * `symbolOnly` {Boolean}: If truthy, creates a Symbol-only Enum.
+  * `behaviour` {Object}: Behaviour to add to the clean concatenated constants.
+    Ignored if symbolOnly is truthy.
+
+
+
+Concatenates multiple enums into a single one. This can be done in two ways:
+
+* **Dirty:** Dirty concatenation references the keys from the constituent enums
+  directly; this allows for equality when comparing a key from a constituent
+  Enum with the same key from the concatenated Enum, but additional behaviour
+  cannot be passed, and some `$id` will overlap. This is a limitation put in
+  place to avoid side-effects by mutating the keys of the constituent enums. In
+  this case, if you want a similar behaviour for all the keys, it is suggested
+  that all the constituent enums have behaviour objects that follow the same
+  interface. `symbolOnly` will be set to true if all of the constituent enums are
+  Symbol-only Enums. You can always find the agglomerated behaviour of all
+  constituent enums under the Enum.behaviour property, which will be the equivalent
+  of `Object.assign(enums[0].behaviour, enums[1].behaviour, ...)`.
+* **Clean:** Clean concatenation creates brand new unique keys for the concatenated
+  enumerable, thereby allowing a standardization of the `behaviour` of all the keys
+  without any side-effect. The downside of clean concatenation is that it does
+  not allow for key equality between a key of a constituent Enum and its analogue
+  in the concatenated Enum. If no `behaviour` is provided, the default behaviour will
+  be the equivalent of `Object.assign(enums[0].behaviour, enums[1].behaviour, ...)`.
+
+### Instance Methods
 
 #### Enum#iterator()
 

@@ -17,6 +17,7 @@ describe('Enum', function(){
   describe('constructor(constants, behaviour)', function(){
     it('should refuse non-array constants argument, or insufficiently long arrays', function(done){
       const err = `Enum expected argument 'constants' to be an array of length >= 2`;
+      const symbolOnlyErr = `Enum expected argument 'constants' to be a non-empty array`;
 
       expect(Enum.bind(null, null)).to.throw(err);
       expect(Enum.bind(null, undefined)).to.throw(err);
@@ -25,6 +26,14 @@ describe('Enum', function(){
       expect(Enum.bind(null, () => {})).to.throw(err);
       expect(Enum.bind(null, {a: 'a', b: 'b'})).to.throw(err);
       expect(Enum.bind(null, [])).to.throw(err);
+
+      expect(Enum.bind(null, null, true)).to.throw(symbolOnlyErr);
+      expect(Enum.bind(null, undefined, true)).to.throw(symbolOnlyErr);
+      expect(Enum.bind(null, 1, true)).to.throw(symbolOnlyErr);
+      expect(Enum.bind(null, true, true)).to.throw(symbolOnlyErr);
+      expect(Enum.bind(null, () => {}, true)).to.throw(symbolOnlyErr);
+      expect(Enum.bind(null, {a: 'a', b: 'b'}, true)).to.throw(symbolOnlyErr);
+      expect(Enum.bind(null, [], true)).to.throw(symbolOnlyErr);
 
       done();
     });
@@ -64,10 +73,10 @@ describe('Enum', function(){
       done();
     });
 
-    it('should assign non-object constant members as enumerable.val', function(done){
-      const should_assign_enum_val = (val) => {
-        const e = Enum(['A', val]);
-        expect(e.A.val).to.be.equal(val);
+    it('should assign constant values as enumerable.value', function(done){
+      const should_assign_enum_val = (value) => {
+        const e = Enum(['A', value]);
+        expect(e.A.value).to.be.equal(value);
       };
 
       should_assign_enum_val('a');
@@ -76,6 +85,7 @@ describe('Enum', function(){
       should_assign_enum_val(true);
       should_assign_enum_val(1);
       should_assign_enum_val(() => {});
+      should_assign_enum_val({ foo: () => 'foo' });
 
       done();
     });
@@ -329,6 +339,242 @@ describe('Enum', function(){
         expect(k.toString()).to.be.equal(`Symbol(${order[i++]})`);
       }
 
+      done();
+    });
+  });
+
+  describe('concat', function(){
+    it('should accept an Array of Enums', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR'], true);
+      const FOOBAR = EnumClass.concat([FOO, BAR]);
+      expect(FOOBAR).to.be.instanceof(EnumClass);
+      done();
+    });
+
+    it('should throw if an element of the first argument is not instanceof Enum', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR'], true);
+      const BAZ = ['BAZ'];
+      const thrower = (enums) => EnumClass.concat(enums);
+      expect(thrower.bind(null, [FOO, BAR, BAZ])).to.throw(
+        'Enum.concat expected first argument to be an Array of Enums. Found ' +
+        'instanceof Array in the lot instead.'
+      );
+      done();
+    });
+
+    it('[dirty] should return an Enum containing all of the constants of its constituent enums', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR', 'BAZ'], true);
+      const FOOBAR = EnumClass.concat([FOO, BAR]);
+
+      expect(FOOBAR).to.be.instanceof(EnumClass);
+      expect(FOOBAR.FOO).to.be.equal(FOO.FOO);
+      expect(FOOBAR.BAR).to.be.equal(BAR.BAR);
+      expect(FOOBAR.BAZ).to.be.equal(BAR.BAZ);
+      done();
+    });
+
+    it('[dirty] symbolOnly should override passed behaviour', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR'], true);
+      const FOOBAR = EnumClass.concat(
+        [FOO, BAR],
+        {
+          symbolOnly: true,
+          behaviour: { foo() { return 'foo'; } }
+        }
+      );
+
+      expect(FOOBAR.FOO.foo).to.be.undefined;
+      done();
+    });
+
+    it('[dirty] should override passed behaviour', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR'], true);
+      const FOOBAR = EnumClass.concat(
+        [FOO, BAR],
+        {
+          symbolOnly: true,
+          behaviour: { foo() { return 'foo'; } }
+        }
+      );
+
+      expect(FOOBAR.FOO.foo).to.be.undefined;
+      done();
+    });
+
+    it('[dirty] should return a Symbol-only Enum if all constituent Enums are such and no behaviour is passed', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR'], true);
+      const FOOBAR = EnumClass.concat([FOO, BAR]);
+
+      expect(FOOBAR.symbolOnly).to.be.true;
+      done();
+    });
+
+    it('[dirty] should not alter the constituent Enums\' keys with passed behaviour', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR'], true);
+      const FOOBAR = EnumClass.concat([FOO, BAR], { behaviour: { foo() { return 'foo'; } } });
+
+      expect(FOOBAR.symbolOnly).to.be.false;
+      expect(FOOBAR.FOO).to.be.a('symbol');
+      expect(FOOBAR.FOO.foo).to.be.undefined;
+      done();
+    });
+
+    it('[dirty] should return a normal Enum if behaviour is passed, no matter whether all constituent Enums are Symbol-only', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR'], true);
+      const FOOBAR = EnumClass.concat([FOO, BAR], { behaviour: { foo() { return 'foo'; } } });
+
+      expect(FOOBAR.symbolOnly).to.be.false;
+      expect(FOOBAR.FOO).not.to.be.instanceof(Object);
+      expect(FOOBAR.FOO.foo).to.be.undefined;
+      done();
+    });
+
+    it('[dirty] should return a normal Enum if no behaviour is passed and there is at least one normal constituent Enum', function(done){
+      const FOO = Enum(['FOO', { foo() { return 'foo'; } }]);
+      const BAR = Enum(['BAR'], true);
+      const FOOBAR = EnumClass.concat([FOO, BAR]);
+
+      expect(FOOBAR.symbolOnly).to.be.false;
+      expect(FOOBAR.FOO).to.be.instanceof(Object);
+      expect(FOOBAR.FOO.foo).to.be.a('function');
+      expect(FOOBAR.BAR).to.be.a('symbol');
+      done();
+    });
+
+    it('[clean] should throw on duplicate keys', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['FOO'], true);
+      const thrower = (enums, options) => EnumClass.concat(enums, options);
+      expect(thrower.bind(null, [FOO, BAR], { clean: true })).to.throw(
+        `Enum.concat: Duplicate Enum constant for key 'FOO'`
+      );
+      done();
+    });
+
+    it('[clean] should return an Enum containing copies of the constants of its constituent Enums', function(done){
+      const FOO = Enum(['FOO', { foo() { return 'foo'; } }]);
+      const BAR = Enum(['BAR'], true);
+      const FOOBAR = EnumClass.concat([FOO, BAR], { clean: true });
+
+      expect(FOOBAR.FOO).to.be.instanceof(Object);
+      expect(FOOBAR.FOO.foo).to.be.a('function');
+      expect(FOOBAR.FOO.foo).to.be.equal(FOO.FOO.foo);
+      expect(FOOBAR.FOO).not.to.be.equal(FOO.FOO);
+      expect(FOOBAR.BAR).to.be.a('symbol');
+      expect(FOOBAR.BAR).not.to.be.equal(BAR.BAR);
+      done();
+    });
+
+    it('[clean] should return an Enum with standardized behaviour for all of its keys', function(done){
+      const FOO = Enum(['FOO', {}]);
+      const BAR = Enum(['BAR', {}]);
+      const FOOBAR = EnumClass.concat([FOO, BAR], { clean: true, behaviour: { foo() { return 'foo'; } } });
+
+      expect(FOOBAR.FOO).to.be.instanceof(Object);
+      expect(FOOBAR.FOO.foo).to.be.a('function');
+      expect(FOOBAR.BAR).to.be.instanceof(Object);
+      expect(FOOBAR.BAR.foo).to.be.a('function');
+      expect(FOOBAR.FOO.foo).to.be.equal(FOOBAR.BAR.foo);
+      done();
+    });
+
+    it('[clean] should ignore the constituent Enums\' behaviour if behaviour is passed', function(done){
+      const FOO = Enum(['FOO', {}], { foo() { return 'foo'; } });
+      const BAR = Enum(['BAR', {}], { foo() { return 'bar'; } });
+      const FOOBAR = EnumClass.concat(
+        [FOO, BAR],
+        { clean: true, behaviour: { baz(){ return 'baz'; } } }
+      );
+
+      expect(FOOBAR.FOO).to.be.instanceof(Object);
+      expect(FOOBAR.FOO.foo).to.be.undefined;
+      expect(FOOBAR.FOO.baz).to.be.a('function');
+      expect(FOOBAR.BAR).to.be.instanceof(Object);
+      expect(FOOBAR.BAR.foo).to.be.undefined;
+      expect(FOOBAR.BAR.baz).to.be.a('function');
+      done();
+    });
+
+    it('[clean] should return an Enum with the union of the behaviour of all of its constituent Enums', function(done){
+      const FOO = Enum(['FOO', {}], { foo() { return 'foo'; } });
+      const BAR = Enum(['BAR', {}], { bar() { return 'bar'; } });
+      const FOOBAR = EnumClass.concat([FOO, BAR], { clean: true });
+
+      expect(FOOBAR.FOO).to.be.instanceof(Object);
+      expect(FOOBAR.FOO.foo).to.be.a('function');
+      expect(FOOBAR.FOO.bar).to.be.a('function');
+      expect(FOOBAR.BAR).to.be.instanceof(Object);
+      expect(FOOBAR.BAR.foo).to.be.a('function');
+      expect(FOOBAR.BAR.bar).to.be.a('function');
+      expect(FOOBAR.BAR.foo).to.be.equal(FOOBAR.BAR.foo);
+
+      expect(FOO.FOO.foo).to.be.equal(FOOBAR.FOO.foo);
+      expect(FOOBAR.FOO.foo).to.be.equal(FOOBAR.BAR.foo);
+      expect(BAR.BAR.bar).to.be.equal(FOOBAR.BAR.bar);
+      expect(FOOBAR.FOO.bar).to.be.equal(FOOBAR.BAR.bar);
+      done();
+    });
+
+    it('[clean] should override the behaviour according to the order in which the Enums are passed', function(done){
+      const FOO = Enum(['FOO', {}], { foo() { return 'foo'; } });
+      const BAR = Enum(['BAR', {}], { foo() { return 'bar'; } });
+      const FOOBAR = EnumClass.concat([FOO, BAR], { clean: true });
+
+      expect(FOOBAR.FOO).to.be.instanceof(Object);
+      expect(FOOBAR.FOO.foo).to.be.a('function');
+      expect(FOOBAR.FOO.foo()).to.be.equal('bar');
+      expect(FOOBAR.BAR).to.be.instanceof(Object);
+      expect(FOOBAR.BAR.foo).to.be.a('function');
+      expect(FOOBAR.BAR.foo()).to.be.equal('bar');
+      done();
+    });
+
+    it('[clean] should produce a Symbol-only Enum if all constituents are Symbol-only too', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR'], true);
+      const FOOBAR = EnumClass.concat([FOO, BAR], { clean: true });
+
+      expect(FOOBAR.FOO).not.to.be.instanceof(Object);
+      expect(FOOBAR.FOO).to.be.a('symbol');
+      expect(FOOBAR.BAR).not.to.be.instanceof(Object);
+      expect(FOOBAR.BAR).to.be.a('symbol');
+      expect(FOOBAR.symbolOnly).to.be.true;
+      done();
+    });
+
+    it('[clean] should produce a Symbol-only Enum if symbolOnly is passed', function(done){
+      const FOO = Enum(['FOO'], true);
+      const BAR = Enum(['BAR', {}], { bar() { return 'bar'; } });
+      const FOOBAR = EnumClass.concat([FOO, BAR], { clean: true, symbolOnly: true });
+
+      expect(FOOBAR.FOO).not.to.be.instanceof(Object);
+      expect(FOOBAR.FOO).to.be.a('symbol');
+      expect(FOOBAR.BAR).not.to.be.instanceof(Object);
+      expect(FOOBAR.BAR).to.be.a('symbol');
+      done();
+    });
+
+    it('[clean] should ignore the behaviour if symbolOnly is truthy', function(done){
+      const FOO = Enum(['FOO', {}], { foo() { return 'foo'; } });
+      const BAR = Enum(['BAR', {}], { foo() { return 'bar'; } });
+      const FOOBAR = EnumClass.concat(
+        [FOO, BAR],
+        { clean: true, symbolOnly: true, behaviour: { baz(){ return 'baz'; } } }
+      );
+
+      expect(FOOBAR.FOO).not.to.be.instanceof(Object);
+      expect(FOOBAR.FOO).to.be.a('symbol');
+      expect(FOOBAR.BAR).not.to.be.instanceof(Object);
+      expect(FOOBAR.BAR).to.be.a('symbol');
+      expect(FOOBAR.behaviour).to.be.undefined;
       done();
     });
   });
