@@ -1,6 +1,6 @@
 {
   "name": "enum-next",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "JS Implementation of the Java Enumerable type",
   "main": "lib/index.js",
   "module": "esm/index.js",
